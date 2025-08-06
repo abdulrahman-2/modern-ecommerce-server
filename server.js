@@ -1,13 +1,9 @@
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
-const connectDB = require("./config/db");
 
 // Load environment variables
 dotenv.config();
-
-// Connect to database
-connectDB();
 
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
@@ -19,6 +15,7 @@ app.use(express.json());
 
 // Import routes
 const authRoutes = require("./routes/authRoutes");
+const { connectDB } = require("./config/db");
 
 // Mount routes
 app.use("/api/auth", authRoutes);
@@ -164,6 +161,9 @@ app.post(
     res.json({ received: true });
   }
 );
+
+// Connect to database
+connectDB();
 
 // Error handling middleware
 app.use((error, req, res, next) => {
