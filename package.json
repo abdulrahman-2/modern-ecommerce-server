@@ -1,7 +1,7 @@
 {
   "name": "modern-ecommerce-server",
   "version": "1.0.0",
-  "description": "Stripe payment server for Modern E-commerce",
+  "description": "Stripe payment server for Modern E-commerce with authentication",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -9,11 +9,16 @@
   },
   "type": "commonjs",
   "dependencies": {
+    "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
     "express": "^4.18.2",
+    "express-async-handler": "^1.2.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^7.6.3",
     "stripe": "^14.0.0"
   },
-  "keywords": ["stripe", "payment", "ecommerce"],
+  "keywords": ["stripe", "payment", "ecommerce", "authentication", "mongoose"],
   "author": "CodeGeeX",
   "license": "MIT"
 }

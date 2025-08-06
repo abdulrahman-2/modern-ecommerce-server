@@ -1,5 +1,13 @@
 const express = require("express");
 const cors = require("cors");
+const dotenv = require("dotenv");
+const connectDB = require("./config/db");
+
+// Load environment variables
+dotenv.config();
+
+// Connect to database
+connectDB();
 
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
@@ -9,6 +17,12 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Import routes
+const authRoutes = require("./routes/authRoutes");
+
+// Mount routes
+app.use("/api/auth", authRoutes);
+
 // Health check endpoint
 app.get("/", (req, res) => {
   res.json({
@@ -17,6 +31,11 @@ app.get("/", (req, res) => {
     endpoints: {
       health: "GET /",
       createPayment: "POST /create-payment-intent",
+      auth: {
+        signup: "POST /api/auth/signup",
+        signin: "POST /api/auth/signin",
+        getMe: "GET /api/auth/me",
+      },
     },
   });
 });
@@ -163,6 +182,9 @@ app.use("*", (req, res) => {
       "GET /",
       "POST /create-payment-intent",
       "POST /webhook",
+      "POST /api/auth/signup",
+      "POST /api/auth/signin",
+      "GET /api/auth/me",
     ],
   });
 });
