@@ -1,9 +1,12 @@
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
+const { connectDB } = require("./config/db");
 
 // Load environment variables
 dotenv.config();
+
+const PORT = process.env.PORT || 4242;
 
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
@@ -15,7 +18,9 @@ app.use(express.json());
 
 // Import routes
 const authRoutes = require("./routes/authRoutes");
-const { connectDB } = require("./config/db");
+
+// Connect to database
+connectDB();
 
 // Mount routes
 app.use("/api/auth", authRoutes);
@@ -111,60 +116,6 @@ app.post("/create-payment-intent", async (req, res) => {
   }
 });
 
-// Webhook endpoint for Stripe events (optional but recommended for production)
-app.post(
-  "/webhook",
-  express.raw({ type: "application/json" }),
-  async (req, res) => {
-    const sig = req.headers["stripe-signature"];
-
-    // Replace with your actual webhook endpoint secret
-    const endpointSecret =
-      process.env.STRIPE_WEBHOOK_SECRET || "whsec_test_...";
-
-    let event;
-
-    try {
-      event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
-      console.log(`Webhook received: ${event.type}`);
-    } catch (err) {
-      console.error(`Webhook signature verification failed:`, err.message);
-      return res.status(400).send(`Webhook Error: ${err.message}`);
-    }
-
-    // Handle the event
-    switch (event.type) {
-      case "payment_intent.succeeded":
-        const paymentIntent = event.data.object;
-        console.log(
-          `Payment succeeded: ${paymentIntent.id} for $${(
-            paymentIntent.amount / 100
-          ).toFixed(2)}`
-        );
-        // Here you can update your database, send confirmation emails, etc.
-        break;
-
-      case "payment_intent.payment_failed":
-        const failedPayment = event.data.object;
-        console.log(`Payment failed: ${failedPayment.id}`);
-        break;
-
-      case "payment_method.attached":
-        const paymentMethod = event.data.object;
-        console.log(`Payment method attached: ${paymentMethod.id}`);
-        break;
-
-      default:
-        console.log(`Unhandled event type: ${event.type}`);
-    }
-
-    res.json({ received: true });
-  }
-);
-
-// Connect to database
-connectDB();
-
 // Error handling middleware
 app.use((error, req, res, next) => {
   console.error("Server Error:", error);
@@ -188,8 +139,6 @@ app.use("*", (req, res) => {
     ],
   });
 });
-
-const PORT = process.env.PORT || 4242;
 
 app.listen(PORT, () => {
   console.log("🚀 Modern E-commerce Stripe Server Started!");
